@@ -1,4 +1,4 @@
-use std::fmt::{self, format};
+use std::collections::HashMap;
 
 use fltk::{app::App, button::Button, prelude::*, window::Window};
 
@@ -15,17 +15,14 @@ where
     fn add_callback<F: FnMut(&mut Self) + 'static>(&mut self, mut callback: F)
     where
         Self: Sized,
+        Self: WidgetExt,
     {
-        let mut cb = self.callback();
-        println!("add {}", cb.is_some());
-        self.set_callback(move |widget| {
-            callback(widget);
-            if let Some(func) = cb.as_mut() {
-                (*func)();
-            }
-        });
+        CALLBACKS.insert(self as *const dyn WidgetExt, callback);
+        self.set_callback(move |widget| CALLBACKS.get(widget)());
     }
 }
+
+static CALLBACKS: HashMap<*const dyn WidgetExt, dyn FnMut(&mut _) + 'static> = HashMap::new();
 
 pub fn main() {
     let application = App::default();
@@ -37,10 +34,10 @@ pub fn main() {
         b.set_label(&format!("click {}", click));
         click += 1;
     });
-    b.add_callback(move |b| {
+    b.add_callback(move |_b| {
         println!("click {}", click);
     });
     window.end();
     window.show();
-    application.run();
+    application.run().unwrap();
 }
