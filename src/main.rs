@@ -1,7 +1,24 @@
 use std::collections::HashMap;
 
-use fltk::{app::App, button::Button, prelude::*, window::Window};
-
+struct Widget {}
+impl Widget {
+    pub(crate) fn set_label(&self, format: &str) -> () {
+        println!("label: {}", format);
+    }
+}
+impl WidgetExt for Widget {
+    fn set_callback<F: FnMut(&mut Self) + 'static>(&mut self, _cb: F)
+    where
+        Self: Sized,
+    {
+        // nothing
+    }
+}
+pub trait WidgetExt {
+    fn set_callback<F: FnMut(&mut Self) + 'static>(&mut self, cb: F)
+    where
+        Self: Sized;
+}
 pub trait Callbacks {
     fn add_callback<F: FnMut(&mut Self) + 'static>(&mut self, cb: F)
     where
@@ -25,10 +42,7 @@ where
 static CALLBACKS: HashMap<*const dyn WidgetExt, dyn FnMut(&mut _) + 'static> = HashMap::new();
 
 pub fn main() {
-    let application = App::default();
-    let mut window = Window::default();
-    window.set_size(110, 110);
-    let mut b = Button::new(5, 5, 100, 100, "click me");
+    let mut b = Widget {};
     let mut click = 0;
     b.add_callback(move |b| {
         b.set_label(&format!("click {}", click));
@@ -37,7 +51,4 @@ pub fn main() {
     b.add_callback(move |_b| {
         println!("click {}", click);
     });
-    window.end();
-    window.show();
-    application.run().unwrap();
 }

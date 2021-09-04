@@ -7,4 +7,3 @@ edition = "2018"
 
 [dependencies]
 #fltk = { git="https://github.com/fltk-rs/fltk-rs" , features = ["fltk-bundled"] }
-fltk = {version="1.1.15"}
